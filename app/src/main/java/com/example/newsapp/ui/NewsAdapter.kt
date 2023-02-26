@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -15,7 +16,8 @@ import com.example.newsapp.data.local.entity.NewsEntity
 import com.example.newsapp.databinding.ItemNewsBinding
 import com.example.newsapp.utils.DateFormatter
 
-class NewsAdapter : ListAdapter<NewsEntity, NewsAdapter.MyViewHolder>(DIFF_CALLBACK) {
+class NewsAdapter(private val onBookmarkClick: (NewsEntity) -> Unit) :
+    ListAdapter<NewsEntity, NewsAdapter.MyViewHolder>(DIFF_CALLBACK) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val binding = ItemNewsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -25,6 +27,26 @@ class NewsAdapter : ListAdapter<NewsEntity, NewsAdapter.MyViewHolder>(DIFF_CALLB
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val news = getItem(position)
         holder.bind(news)
+
+        val ivBookmark = holder.binding.ivBookmark
+        if (news.isBookmarked) {
+            ivBookmark.setImageDrawable(
+                ContextCompat.getDrawable(
+                    ivBookmark.context,
+                    R.drawable.ic_bookmarked_white
+                )
+            )
+        } else {
+            ivBookmark.setImageDrawable(
+                ContextCompat.getDrawable(
+                    ivBookmark.context,
+                    R.drawable.ic_bookmark_white
+                )
+            )
+        }
+        ivBookmark.setOnClickListener {
+            onBookmarkClick(news)
+        }
     }
 
     class MyViewHolder(val binding: ItemNewsBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -32,7 +54,7 @@ class NewsAdapter : ListAdapter<NewsEntity, NewsAdapter.MyViewHolder>(DIFF_CALLB
             binding.tvItemTitle.text = news.title
             binding.tvItemPublishedDate.text = DateFormatter.formatDate(news.publishedAt)
             Glide.with(itemView.context)
-                .load(news.url)
+                .load(news.urlToImage)
                 .apply(
                     RequestOptions.placeholderOf(R.drawable.ic_loading).error(R.drawable.ic_error)
                 )
