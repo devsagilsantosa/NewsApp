@@ -1,0 +1,2 @@
+# NewsApp
+practice dependency injection
